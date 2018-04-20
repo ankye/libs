@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"io"
+	"log"
+	"time"
 
 	"github.com/gonethopper/libs/grpc"
-	"github.com/wuqifei/server_lib/libgrpc/test/pb"
+	"github.com/gonethopper/libs/grpc/pb"
 	"google.golang.org/grpc/grpclog"
 )
 
@@ -15,18 +17,36 @@ func main() {
 	options.Address = "127.0.0.1:9999"
 	client := grpc.NewClient(options)
 	// 初始化客户端
+	c := pb.NewMessageClient(client.ClientConn)
 
-	in := &pb.HelloRequest{}
-	in.Name = "game"
-
-	l := pb.NewHelloClient(client.ClientConn)
-	res, err := l.SayHello(context.Background(), in)
-
+	stream, err := c.Request(context.Background())
 	if err != nil {
 		grpclog.Fatalln(err)
 	}
-	fmt.Println(res.Message)
+	waitc := make(chan struct{})
+	go func() {
+		for {
+			in, err := stream.Recv()
+			if err == io.EOF {
+				// read done.
+				close(waitc)
+				return
+			}
+			if err != nil {
+				log.Fatalf("Failed to receive a note : %v", err)
+			}
+			log.Printf("Got message %d ", in.MessageID)
+		}
+	}()
+	for i := 1; i < 100; i++ {
+		msg := &pb.SSMessage{MessageID: int32(i)}
+		if err := stream.Send(msg); err != nil {
+			log.Fatalf("Failed to send a note: %v", err)
+		}
+		time.Sleep(1 * time.Second)
+	}
 
-	state := client.ClientConn.GetState()
-	log.Debug("rpc status:%s", state.String())
+	stream.CloseSend()
+	<-waitc
+
 }

@@ -1,0 +1,34 @@
+syntax = "proto3"; // 指定proto版本
+package pb;     // 指定包名
+
+option go_package = "pb";
+
+// 定义Message服务
+service Message {
+	// 定义Request方法
+	rpc Request(stream SSMessage) returns (stream SSMessage) {}
+    
+}
+
+// SSMessage Server Message结构
+message SSMessage {
+	string sessionID = 1;
+    int32 srcSID = 2;
+    int32 srcType = 3;
+    int32 destSID = 4;
+    int32 destType = 5;
+    int32 seqID = 6;
+    int32 messageID = 7;
+    enum MessageType {  
+        UNKNOWN = 0;  
+        REQUEST = 1;  
+        RESPONSE = 2;  
+        NOTIFY = 3;
+        BROADCAST = 4; 
+    }  
+    MessageType  msgType = 8;
+    string transID = 9; //transaction ID
+    int32 uid = 10;
+    int32 bodySize= 11;
+    bytes body = 12;
+}
