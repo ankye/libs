@@ -28,7 +28,7 @@ message SSMessage {
     }  
     MessageType  msgType = 8;
     string transID = 9; //transaction ID
-    int32 uid = 10;
+    int64 uid = 10;
     int32 bodySize= 11;
     bytes body = 12;
 }

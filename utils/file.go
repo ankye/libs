@@ -12,16 +12,17 @@ import (
 	"strings"
 )
 
+//CompleteHandle handler define
 type CompleteHandle func(filepath interface{})
 
-//获取调用者的当前文件DIR
+//CurrentDir 获取调用者的当前文件DIR
 //Get the caller now directory
-func CurDir() string {
+func CurrentDir() string {
 	_, filename, _, _ := runtime.Caller(1)
 	return filepath.Dir(filename)
 }
 
-//将字节数组保存到文件中去
+//SaveToFile 将字节数组保存到文件中去
 //Save bytes into file
 func SaveToFile(filepath string, content []byte, handle CompleteHandle) error {
 	//全部权限写入文件
@@ -34,29 +35,29 @@ func SaveToFile(filepath string, content []byte, handle CompleteHandle) error {
 	return err
 }
 
-// read bytes from file
-func ReadfromFile(filepath string) ([]byte, error) {
+//ReadFromFile read bytes from file
+func ReadFromFile(filepath string) ([]byte, error) {
 	return ioutil.ReadFile(filepath)
 }
 
-// Get file info
+//GetFilenameInfo Get file info fron filepath
 func GetFilenameInfo(filepath string) (os.FileInfo, error) {
 	fileinfo, err := os.Stat(filepath)
 	return fileinfo, err
 }
 
-// rename
+//Rename rename file from old filename to new filename
 func Rename(oldfilename string, newfilename string) error {
 	return os.Rename(oldfilename, newfilename)
 }
 
-//根据传入文件夹名字递归新建文件夹
+//MakeDir 根据传入文件夹名字递归新建文件夹
 //Create dir by recursion
 func MakeDir(filedir string) error {
 	return os.MkdirAll(filedir, 0777)
 }
 
-//根据传入文件名，递归创建文件夹
+//MakeDirByFile 跟据传入文件名，递归创建文件夹
 // ./dir/filename  /home/dir/filename
 //Create dir by the filename
 func MakeDirByFile(filepath string) error {
@@ -68,6 +69,17 @@ func MakeDirByFile(filepath string) error {
 	return MakeDir(dirpath)
 }
 
+//HasFile 判断文件或文件夹是否存在
+func HasFile(s string) bool {
+	f, err := os.Open(s)
+	if err != nil && os.IsNotExist(err) {
+		return false
+	}
+	f.Close()
+	return true
+}
+
+//FileExist check file is exist
 func FileExist(filename string) bool {
 	fi, err := os.Stat(filename)
 	if err != nil {
@@ -79,6 +91,7 @@ func FileExist(filename string) bool {
 	return true
 }
 
+//DirExist check dir is exist
 func DirExist(filename string) bool {
 	fi, err := os.Stat(filename)
 	if err != nil {
@@ -90,6 +103,35 @@ func DirExist(filename string) bool {
 	return false
 }
 
+//IsFile 判断是否是文件
+func IsFile(filepath string) bool {
+	fielinfo, err := os.Stat(filepath)
+	if err != nil {
+		return false
+	} else {
+		if fielinfo.IsDir() {
+			return false
+		} else {
+			return true
+		}
+	}
+}
+
+//IsDir 判断是否是文件夹
+func IsDir(filepath string) bool {
+	fielinfo, err := os.Stat(filepath)
+	if err != nil {
+		return false
+	} else {
+		if fielinfo.IsDir() {
+			return true
+		} else {
+			return false
+		}
+	}
+}
+
+//WalkDir 递归遍历文件夹
 func WalkDir(dirPth, suffix string) (files []string, err error) {
 	files = make([]string, 0, 30)
 	suffix = strings.ToUpper(suffix)
@@ -106,6 +148,7 @@ func WalkDir(dirPth, suffix string) (files []string, err error) {
 	return files, err
 }
 
+//ListDir 遍历文件夹,非递归
 func ListDir(dirPth string, suffix string) (files []string, err error) {
 	files = make([]string, 0, 10)
 	dir, err := ioutil.ReadDir(dirPth)
@@ -124,23 +167,13 @@ func ListDir(dirPth string, suffix string) (files []string, err error) {
 	return files, nil
 }
 
-//判断文件或文件夹是否存在
-func HasFile(s string) bool {
-	f, err := os.Open(s)
-	if err != nil && os.IsNotExist(err) {
-		return false
-	}
-	f.Close()
-	return true
-}
-
-//File-File复制文件
+//CopyFF File-File复制文件
 func CopyFF(src io.Reader, dst io.Writer) error {
 	_, err := io.Copy(dst, src)
 	return err
 }
 
-//File-String复制文件
+//CopyFS File-String复制文件到字符串
 func CopyFS(src io.Reader, dst string) error {
 	f, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
@@ -151,35 +184,7 @@ func CopyFS(src io.Reader, dst string) error {
 	return err
 }
 
-//判断是否是文件
-func IsFile(filepath string) bool {
-	fielinfo, err := os.Stat(filepath)
-	if err != nil {
-		return false
-	} else {
-		if fielinfo.IsDir() {
-			return false
-		} else {
-			return true
-		}
-	}
-}
-
-//判断是否是文件夹
-func IsDir(filepath string) bool {
-	fielinfo, err := os.Stat(filepath)
-	if err != nil {
-		return false
-	} else {
-		if fielinfo.IsDir() {
-			return true
-		} else {
-			return false
-		}
-	}
-}
-
-//文件状态
+//FileStatus 文件状态
 func FileStatus(filepath string) {
 	fielinfo, err := os.Stat(filepath)
 	if err != nil {
@@ -189,7 +194,7 @@ func FileStatus(filepath string) {
 	}
 }
 
-//文件夹下数量
+//SizeofDir 文件夹下数量
 func SizeofDir(dirPth string) int {
 	if IsDir(dirPth) {
 		files, _ := ioutil.ReadDir(dirPth)
@@ -199,7 +204,7 @@ func SizeofDir(dirPth string) int {
 	return 0
 }
 
-//获取文件后缀
+//GetFileSuffix 获取文件后缀
 func GetFileSuffix(f string) string {
 	fa := strings.Split(f, ".")
 	if len(fa) == 0 {
@@ -209,13 +214,11 @@ func GetFileSuffix(f string) string {
 	}
 }
 
-/*
-# 去除标题中的非法字符 (Windows)
-def validateTitle(title):
-rstr = r"[\/\\\:\*\?\"\<\>\|]"  # '/\:*?"<>|'
-new_title = re.sub(rstr, "", title)
-return new_title
-*/
+//ValidFileName 去除标题中的非法字符 (Windows)
+//def validateTitle(title):
+//rstr = r"[\/\\\:\*\?\"\<\>\|]"  # '/\:*?"<>|'
+//new_title = re.sub(rstr, "", title)
+//return new_title
 func ValidFileName(filename string) string {
 	patterns := []string{
 		" ", "#",

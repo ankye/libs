@@ -22,7 +22,8 @@ type ClientSecureOptions struct {
 	Name string
 }
 
-func NewClient(options *ClientOptions) *Client {
+//NewClient create grpc client, if connection is refused, then return error
+func NewClient(options *ClientOptions) (*Client, error) {
 	c := &Client{}
 	opts := make([]grpc.DialOption, 0)
 	if options.Secure == nil {
@@ -30,7 +31,7 @@ func NewClient(options *ClientOptions) *Client {
 	} else {
 		creds, err := credentials.NewClientTLSFromFile(options.Secure.File, options.Secure.Name)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		opts = append(opts, grpc.WithTransportCredentials(creds))
 	}
@@ -41,12 +42,12 @@ func NewClient(options *ClientOptions) *Client {
 
 	conn, err := grpc.Dial(options.Address, opts...)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	c.ClientConn = conn
 
 	state := conn.GetState()
 	log.Info("rpc connect:[%s] status[%s]", options.Address, state.String())
-	return c
+	return c, nil
 
 }

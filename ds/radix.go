@@ -106,7 +106,7 @@ type Tree struct {
 	size int
 }
 
-// New returns an empty Tree
+// New returns an empty Tree 非线程安全
 func New() *Tree {
 	return NewFromMap(nil)
 }

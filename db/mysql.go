@@ -18,5 +18,8 @@ func NewDB(driver string, dsm string, timezone string) *xorm.Engine {
 		//log.Fatal(err.Error())
 	}
 	engine.TZLocation, _ = time.LoadLocation(timezone)
+	engine.ShowExecTime(true)
+	engine.ShowSQL(true)
+
 	return engine
 }

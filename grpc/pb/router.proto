@@ -1,0 +1,30 @@
+syntax = "proto3"; // 指定proto版本
+package pb;     // 指定包名
+
+option go_package = "pb";
+
+// 定义Router服务
+service Router {
+	// 定义Proxy方法
+	rpc Proxy(stream SSRouter) returns (stream SSRouter) {}
+    
+}
+
+// SSRouter Server Message结构
+message SSRouter {
+    int32 srcSID = 1;
+    int32 srcType = 2;
+    int32 destSID = 3;
+    int32 destType = 4;
+    enum TransferType {  
+        TRANSTYPHEARTBEAT = 0;  
+        TRANSTYPEBYP2P = 1;
+        TRANSTYPEBYP2G = 2;
+        TRANSTYPEBYBROADCAST = 3;  
+        TRANSTYPEBYKEY = 4;
+    }  
+    TransferType transType = 5;
+    int64 uid = 6;
+    int32 bodySize= 7;
+    bytes body = 8;
+}
