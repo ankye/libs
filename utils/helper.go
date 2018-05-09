@@ -1,6 +1,11 @@
 package utils
 
-import "reflect"
+import (
+	"fmt"
+	"reflect"
+
+	log "github.com/gonethopper/libs/logs"
+)
 
 //Struct2Map struct 2 map
 func Struct2Map(obj interface{}) map[string]interface{} {
@@ -12,4 +17,11 @@ func Struct2Map(obj interface{}) map[string]interface{} {
 		data[t.Field(i).Name] = v.Field(i).Interface()
 	}
 	return data
+}
+
+//LogError log error and return error
+func LogError(f string, v ...interface{}) error {
+	err := fmt.Errorf(f, v)
+	log.Error(err.Error())
+	return err
 }
