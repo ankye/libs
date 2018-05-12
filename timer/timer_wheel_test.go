@@ -29,7 +29,7 @@ func TestTimer(t *testing.T) {
 	go func() {
 		var i int32
 		for i = 0; i < 2*N; i++ {
-			timerwheel.AddNode(time.Millisecond*time.Duration(10*i), callBack)
+			timerwheel.AddTimer(time.Millisecond*time.Duration(10*i), callBack)
 		}
 	}()
 

@@ -26,14 +26,14 @@ type TimerWheel struct {
 	quit chan struct{} //时间轮退出信号
 }
 
-type Node struct {
+type Timer struct {
 	//TimerId uint32  //定时器id，便于以后查找
 	expire       uint32 //任务过期时间
 	callBackFunc func() //回调函数
 }
 
-func (n *Node) String() string {
-	return fmt.Sprintf("Node:expire,%d", n.expire)
+func (n *Timer) String() string {
+	return fmt.Sprintf("Timer:expire,%d", n.expire)
 }
 
 //创建时间轮
@@ -57,20 +57,20 @@ func NewTimerWheel(d time.Duration) *TimerWheel {
 	return t
 }
 
-func (tw *TimerWheel) AddNode(d time.Duration, f func()) *Node {
-	nd := new(Node)
+func (tw *TimerWheel) AddTimer(d time.Duration, f func()) *Timer {
+	nd := new(Timer)
 	nd.callBackFunc = f
 
 	tw.Lock()
 	nd.expire = uint32(d/tw.tick) + tw.time
-	tw.addNode(nd)
+	tw.addTimer(nd)
 	tw.Unlock()
 
 	return nd
 }
 
 //向时间轮中添加任务结点
-func (tw *TimerWheel) addNode(nd *Node) {
+func (tw *TimerWheel) addTimer(nd *Timer) {
 	expire := nd.expire
 	current := tw.time
 
@@ -149,9 +149,9 @@ func (tw *TimerWheel) moveList(level, idx int) {
 	l.Init() //将该list清空
 
 	for e := front; e != nil; e = e.Next() {
-		nd := e.Value.(*Node)
+		nd := e.Value.(*Timer)
 		//将定时节点重新加入到时间轮中
-		tw.addNode(nd)
+		tw.addTimer(nd)
 	}
 }
 
@@ -175,8 +175,8 @@ func (tw *TimerWheel) execute() {
 //将timeout的任务从时间轮中删除
 func dispatchList(front *list.Element) {
 	for e := front; e != nil; e = e.Next() {
-		node := e.Value.(*Node)
-		go node.callBackFunc()
+		timer := e.Value.(*Timer)
+		go timer.callBackFunc()
 	}
 }
 
