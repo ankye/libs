@@ -1,0 +1,23 @@
+syntax = "proto3"; // 指定proto版本
+package body;     // 指定包名
+
+option go_package = "body";
+
+
+
+// UserRegisterReq Server Message结构
+message UserRegisterReq {
+    string account = 1;
+    int64  uid = 2;
+    string phone = 3;
+    int32 loginType = 4;
+    enum TransferType {  
+        USERLOGINTYPEACCOUNT = 0;  
+        USERLOGINTYPEPHONE = 1;
+        USERLOGINTYPEQQ = 2;
+        USERLOGINTYPEWX = 3;  
+    }  
+    string password = 5;
+    string token = 6;
+    string smsText =7;
+}
