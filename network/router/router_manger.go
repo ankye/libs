@@ -2,11 +2,12 @@ package router
 
 import (
 	"sync"
+	"time"
 
 	"github.com/gonethopper/libs/common"
 	"github.com/gonethopper/libs/grpc/pb"
-	log "github.com/gonethopper/libs/logs"
-	"github.com/gonethopper/libs/utils"
+	"github.com/gonethopper/libs/logs"
+	"github.com/lunny/log"
 )
 
 var (
@@ -74,21 +75,21 @@ func (r *RouterManager) addConnection(serverID int, address string, queueSize ui
 		return nil
 
 	}
-	return utils.LogError("RouterManager already exist connection id[%d] address[%s]", serverID, address)
+	return logs.ErrorR("RouterManager already exist connection id[%d] address[%s]", serverID, address)
 }
 
 //AddMaster 添加主Router节点
 func (r *RouterManager) AddMaster(serverID int, serverType int, address string) error {
 
 	if err := r.addConnection(serverID, address, r.QueueSize); err != nil {
-		log.Error(err)
+		logs.Error(err)
 	}
 
 	if r.Masters[serverType] == 0 {
 		r.Masters[serverType] = serverID
 	} else {
 
-		return utils.LogError("RouterManager addMaster type[%d] ID[%#x] addr[%s] already exist,please check config", serverType, serverID, address)
+		return logs.ErrorR("RouterManager addMaster type[%d] ID[%#x] addr[%s] already exist,please check config", serverType, serverID, address)
 	}
 
 	log.Info("RouterManager addMaster type[%d] id[%d] addr[%s] success.", serverType, serverID, address)
@@ -100,35 +101,44 @@ func (r *RouterManager) TryConnect() {
 	for serverID, conn := range r.Connections {
 		if !conn.IsConnected() {
 			if err := conn.Connect(); err != nil {
-				log.Error("Try Connect ID[%#x] Address[%s] failed, try again", serverID, conn.Address)
+				logs.Error("Try Connect failed ID[%#x] Address[%s], try again", serverID, conn.Address)
 			} else {
-				log.Info("Try Connect ID[%#x] Address[%s] success.", serverID, conn.Address)
+				logs.Info("Try Connect success ID[%#x] Address[%s].", serverID, conn.Address)
 			}
 
 		}
 	}
 }
 
+//CheckConnections 检测链接存活状态
+func (r *RouterManager) CheckConnections() {
+
+	for _ = range time.Tick(60 * time.Second) {
+		r.TryConnect()
+	}
+
+}
+
 //AddSlaver 添加从Router节点
 func (r *RouterManager) AddSlaver(serverID int, serverType int, address string) error {
 	if err := r.addConnection(serverID, address, r.QueueSize); err != nil {
-		log.Error(err)
+		logs.Error(err)
 	}
 	if r.Slavers[serverType] == 0 {
 		r.Slavers[serverType] = serverID
 	} else {
 
-		return utils.LogError("RouterManager addSlaver type[%d] id[%d] addr[%s] already exist,please check config", serverType, serverID, address)
+		return logs.ErrorR("RouterManager addSlaver type[%d] id[%d] addr[%s] already exist,please check config", serverType, serverID, address)
 	}
 
-	log.Info("RouterManager addSlaver type[%d] id[%d] addr[%s] success.", serverType, serverID, address)
+	logs.Info("RouterManager addSlaver type[%d] id[%d] addr[%s] success.", serverType, serverID, address)
 	return nil
 }
 
 //GetRouterConnection 获取Router connection
 func (r *RouterManager) GetRouterConnection(serverType int) *RouterConnection {
 	if serverType >= common.MaxEntityTypeNumber {
-		log.Error("server type is invalid. %d", serverType)
+		logs.Error("server type is invalid. %d", serverType)
 		return nil
 	}
 	serverID := r.Masters[serverType]

@@ -70,8 +70,6 @@ func disruptor() {
 
 	}
 
-	fmt.Println("hello world")
-
 }
 
 func disruptorBlock() {

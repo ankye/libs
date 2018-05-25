@@ -2,15 +2,15 @@ package router
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"strconv"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/gonethopper/libs/ds/queue"
 	libgrpc "github.com/gonethopper/libs/grpc"
 	"github.com/gonethopper/libs/grpc/pb"
-	log "github.com/gonethopper/libs/logs"
+	"github.com/gonethopper/libs/logs"
+	"github.com/gonethopper/libs/utils"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -26,7 +26,7 @@ func NewRouterConnection(serverID int, address string, queueSize uint32) *Router
 	options.Address = r.Address
 	client, err := libgrpc.NewClient(options)
 	if err != nil {
-		log.Error("server connect error :", err)
+		logs.Error("server connect error :", err)
 		return nil
 
 	}
@@ -88,29 +88,37 @@ func (r *RouterConnection) IsConnected() bool {
 
 //ReceiveServerMessage receive server message and send to logic queue
 func (r *RouterConnection) ReceiveServerMessage() {
+
 	for {
 
 		if r.Stream == nil {
 			return
 		}
-		fmt.Println("hello world")
+
 		in, err := r.Stream.Recv()
 		if err == io.EOF {
 			// read done.
-			log.Error("RPC Stream close address:[%s]", r.Address)
+			logs.Error("RPC Stream close address:[%s]", r.Address)
 			r.Stream = nil
 			return
 		}
 		if err != nil {
-			log.Error("Router connection closed by server,Failed to receive a note : %v", err)
+			logs.Error("Router connection closed by server,Failed to receive a note : %s", err.Error())
 			r.Stream = nil
 			return
 		}
 		if in != nil {
-			log.Info("Got message %d ", in.TransType)
+			logs.Info("Got message %d ", in.TransType)
 			//send to logic queue
+			message := new(pb.SSMessage)
+			if err := utils.DecodeMessage(in.Body, message); err != nil {
+				logs.Error("Router connection get message,but decode ssmessage failed : %s", err.Error())
+			} else {
+				logs.Info("Router connection get message and decode SSMessage success :%v", message)
+				GetRouterManagerInstance().Consume(message)
 
-			r.PostMessage(in)
+			}
+
 		}
 
 		// deliver the data to the input queue of agent()
@@ -129,11 +137,11 @@ func (r *RouterConnection) Consume(queueID, lowerSequence, upperSequence int64) 
 		//fmt.Println("get message:", message)
 		if message != nil {
 			if r.Stream == nil {
-				fmt.Println("stream closed")
+				logs.Error("stream closed")
 				continue
 			}
 			if err := r.Stream.Send(message.(*pb.SSRouter)); err != nil {
-				log.Error("Failed to send a note: %v", err)
+				logs.Error("Failed to send a note: %v", err)
 			}
 		}
 		//	time.Sleep(1 * time.Second)
@@ -152,22 +160,30 @@ func (r *RouterConnection) GetHeader() metadata.MD {
 }
 
 //Produce 数据入队列
-func (r *RouterConnection) Produce(m *pb.SSRouter) {
+func (r *RouterConnection) Produce(m *pb.SSRouter) error {
 	if r.Queue == nil {
-		return
+		return errors.New("router connection queue not exist")
 	}
 	if err := r.Queue.Push(m); err != nil {
-		log.Error("queue error %s", err)
+		logs.Error("queue error %s", err)
+		return err
 	}
+	return nil
 }
 
 //PostMessage 投递消息到主逻辑，把router message转换为ssmessage
-func (r *RouterConnection) PostMessage(m *pb.SSRouter) {
-	buf := m.Body
-	message := &pb.SSMessage{}
-	if err := proto.Unmarshal(buf, message); err != nil {
-		log.Error("unmarshaling error: ", err)
-	} // 测试结果
-	GetRouterManagerInstance().Consume(message)
+func (r *RouterConnection) PostMessage(t pb.SSRouter_TransferType, m *pb.SSMessage) error {
+	buf := utils.EncodeMessage(m)
+
+	routerMessage := &pb.SSRouter{
+		SrcSID:    m.SrcSID,
+		SrcType:   m.SrcType,
+		DestSID:   m.DestSID,
+		DestType:  m.DestType,
+		TransType: t,
+		Uid:       m.Uid,
+		Body:      *buf,
+	}
+	return r.Produce(routerMessage)
 
 }

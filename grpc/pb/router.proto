@@ -25,6 +25,5 @@ message SSRouter {
     }  
     TransferType transType = 5;
     int64 uid = 6;
-    int32 bodySize= 7;
-    bytes body = 8;
+    bytes body = 7;
 }

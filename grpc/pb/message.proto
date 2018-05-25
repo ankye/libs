@@ -25,10 +25,10 @@ message SSMessage {
         RESPONSE = 2;  
         NOTIFY = 3;
         BROADCAST = 4; 
+        SERVERSELF = 5;
     }  
     MessageType  msgType = 8;
     string transID = 9; //transaction ID
     int64 uid = 10;
-    int32 bodySize= 11;
-    bytes body = 12;
+    bytes body = 11;
 }

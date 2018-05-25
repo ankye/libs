@@ -15,7 +15,7 @@ func GenUUID() (string, error) {
 	return u.String(), err
 }
 
-//GenUID uidGenerater
+//GenUID uidGenerater workerID between 1-255
 func GenUID(workID int64) (int64, error) {
 	iw, err := goSnowFlake.NewIdWorker(workID)
 	if err != nil {

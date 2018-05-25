@@ -34,6 +34,7 @@
 package logs
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -583,6 +584,13 @@ func Critical(f interface{}, v ...interface{}) {
 // Error logs a message at error level.
 func Error(f interface{}, v ...interface{}) {
 	beeLogger.Error(formatLog(f, v...))
+}
+
+//ErrorR log error and return error
+func ErrorR(f interface{}, v ...interface{}) error {
+	msg := formatLog(f, v...)
+	beeLogger.Error(msg)
+	return errors.New(msg)
 }
 
 // Warning logs a message at warning level.

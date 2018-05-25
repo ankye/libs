@@ -1,0 +1,64 @@
+syntax = "proto3"; // 指定proto版本
+package body;     // 指定包名
+
+option go_package = "body";
+
+// User 结构
+message User {
+    int64 uid = 1;      // 账户唯一标识
+    string email = 3;   // 账户 email
+    string account = 4;    // 用户名
+    string nickname = 5; //昵称
+    string password = 6;  // 密码
+    string phone = 7;   // 手机号
+};
+
+enum LoginType {  
+    UNKNOWN = 0;
+    ACCOUNT = 1;  
+    PHONEPWD = 2;
+    PHONESMS = 3;
+    QQ = 4;
+    WX = 5;  
+}  
+
+message ResponseCode {
+    int32 code = 1;            // 返回码
+    string msg = 2;     // 返回失败时，错误信息
+};
+
+// UserRegisterReq Server Message结构
+message UserRegisterReq {
+    string account = 1;
+    int64  uid = 2;
+    string phone = 3;
+    LoginType loginType = 4;
+   
+    string password = 5;
+    string token = 6;
+    string smsText =7;
+}
+
+message UserRegisterResp {
+    ResponseCode code = 1;
+    User user = 2;
+}
+
+
+
+// UserLoginReq Server Message结构
+message UserLoginReq {
+    string account = 1;
+    int64  uid = 2;
+    string phone = 3;
+    LoginType loginType = 4;
+    string password = 5;
+    string token = 6;
+    string smsText =7;
+}
+
+message UserLoginResp {
+    ResponseCode code = 1;
+    User user = 2;
+}
+
