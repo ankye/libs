@@ -7,7 +7,6 @@ import (
 	"github.com/gonethopper/libs/common"
 	"github.com/gonethopper/libs/grpc/pb"
 	"github.com/gonethopper/libs/logs"
-	"github.com/lunny/log"
 )
 
 var (
@@ -92,7 +91,7 @@ func (r *RouterManager) AddMaster(serverID int, serverType int, address string) 
 		return logs.ErrorR("RouterManager addMaster type[%d] ID[%#x] addr[%s] already exist,please check config", serverType, serverID, address)
 	}
 
-	log.Info("RouterManager addMaster type[%d] id[%d] addr[%s] success.", serverType, serverID, address)
+	logs.Info("RouterManager addMaster type[%d] id[%d] addr[%s] success.", serverType, serverID, address)
 	return nil
 }
 
