@@ -6,13 +6,10 @@ import (
 )
 
 //GenUUID create uuid based on random numbers
-func GenUUID() (string, error) {
+func GenUUID() string {
 	// or error handling
-	u, err := uuid.NewV4()
-	if err != nil {
-		return "", err
-	}
-	return u.String(), err
+	u := uuid.NewV4()
+	return u.String()
 }
 
 //GenUID uidGenerater workerID between 1-255

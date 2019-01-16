@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/astaxie/beego/logs"
 	"github.com/belogik/goes"
+	"github.com/gonethopper/libs/logs"
 )
 
 // NewES return a LoggerInterface

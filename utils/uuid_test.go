@@ -7,10 +7,7 @@ import (
 )
 
 func TestGenUUID(t *testing.T) {
-	u, err := GenUUID()
-	if err != nil {
-		t.Error("failed to gen uuid")
-	}
+	u := GenUUID()
 	log.Info("get uuid %s", u)
 }
 

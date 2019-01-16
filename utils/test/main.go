@@ -21,9 +21,6 @@ func main() {
 		log.Info("uniq values is :[%d]", v)
 	}
 
-	uuid, err := utils.GenUUID()
-	if err != nil {
-		log.Info("get uuid error :", err)
-	}
+	uuid := utils.GenUUID()
 	log.Info("get uuid %s", uuid)
 }
