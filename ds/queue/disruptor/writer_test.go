@@ -2,9 +2,11 @@ package disruptor
 
 import "testing"
 
+const QueueID = 1111
+
 func BenchmarkWriterReserve(b *testing.B) {
 	read, written := NewCursor(), NewCursor()
-	writer := NewWriter(written, read, 1024)
+	writer := NewWriter(QueueID, written, read, 1024)
 	iterations := int64(b.N)
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -17,7 +19,7 @@ func BenchmarkWriterReserve(b *testing.B) {
 
 func BenchmarkWriterNextWrapPoint(b *testing.B) {
 	read, written := NewCursor(), NewCursor()
-	writer := NewWriter(written, read, 1024)
+	writer := NewWriter(QueueID, written, read, 1024)
 	iterations := int64(b.N)
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -30,7 +32,7 @@ func BenchmarkWriterNextWrapPoint(b *testing.B) {
 
 func BenchmarkWriterAwait(b *testing.B) {
 	written, read := NewCursor(), NewCursor()
-	writer := NewWriter(written, read, 1024*64)
+	writer := NewWriter(QueueID, written, read, 1024*64)
 	iterations := int64(b.N)
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -42,7 +44,7 @@ func BenchmarkWriterAwait(b *testing.B) {
 }
 
 func BenchmarkWriterCommit(b *testing.B) {
-	writer := NewWriter(NewCursor(), nil, 1024)
+	writer := NewWriter(QueueID, NewCursor(), nil, 1024)
 	iterations := int64(b.N)
 	b.ReportAllocs()
 	b.ResetTimer()
